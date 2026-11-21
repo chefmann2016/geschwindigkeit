@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de-AT">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die Autofahrt · Mathematik 7. AHS</title>
+<style>
+:root{color-scheme:light;--ink:#122e24;--green:#116442;--mint:#e2f4df;--paper:#f3f6ef;--line:#cedacd;--blue:#245aa8;--orange:#9d4900}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:1rem/1.58 system-ui,sans-serif}main{max-width:1060px;margin:auto;padding:24px clamp(14px,4vw,40px) 50px}header{background:#123e2c;color:#f8fff4;padding:clamp(22px,5vw,50px);border-radius:24px;margin-bottom:20px}header p{max-width:64ch;margin-bottom:0}.eyebrow{font-weight:700;letter-spacing:.08em;font-size:.78rem;text-transform:uppercase;color:#bde8b9}h1,h2,h3{line-height:1.15;margin:.4em 0}h1{font-size:clamp(2.2rem,7vw,4.5rem);letter-spacing:-.055em}h2{font-size:clamp(1.45rem,4vw,2.15rem);letter-spacing:-.03em}section,article{background:white;border:1px solid var(--line);border-radius:18px;padding:clamp(14px,3vw,26px);margin:16px 0}article{margin:10px 0}nav,.row,.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:center}a{color:var(--green)}nav a{background:#fff;border-radius:20px;padding:5px 13px}button,select,input{font:inherit}button,select{border:1px solid #aec7b4;border-radius:10px;background:#eef6ec;color:var(--ink);padding:8px 13px;cursor:pointer;font-weight:650}button.primary{background:var(--green);color:white;border-color:var(--green)}button:disabled{opacity:.55;cursor:default}:focus-visible{outline:3px solid #2866bb;outline-offset:3px}canvas{width:100%;display:block;border-radius:12px;background:#eff8ee;margin:12px 0}.formula{font-weight:700;color:var(--green);font-size:clamp(1rem,3vw,1.25rem)}.range{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:12px}input[type=range]{width:100%;accent-color:var(--green)}.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.readouts div,.note{background:var(--mint);padding:10px 12px;border-radius:10px}.readouts strong{display:block;font-size:1.1rem;font-variant-numeric:tabular-nums}.readouts span{font-size:.83rem}details{margin:8px 0;padding:6px 10px;background:var(--paper);border-radius:8px}summary{cursor:pointer;font-weight:650}details p{margin:.35em 0}.fields label{display:grid;font-weight:650}.fields input{border:1px solid #879f90;border-radius:8px;padding:6px 8px;width:8em}output.feedback{display:block;margin-top:6px;font-weight:650}.ok{color:var(--green)}.retry{color:#8c3d08}.blue{color:var(--blue)}.orange{color:var(--orange)}.quiet{font-size:.9rem}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:640px){.grid{grid-template-columns:1fr}.readouts div{padding:7px}.range{grid-template-columns:1fr;gap:2px}}
+</style>
+<style>
+.readouts{grid-template-columns:repeat(4,minmax(0,1fr))}.fields input{width:7em}.fields select{padding:6px 8px}.interpretation{display:grid;margin-top:10px;font-weight:650}.interpretation select{width:100%;min-width:0}.plot-label{margin:6px 0;font-variant-numeric:tabular-nums}@media(max-width:500px){.readouts{grid-template-columns:repeat(2,1fr)}}
+.live-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.live-panel{background:#f3f8f3;border:1px solid var(--line);padding:12px;border-radius:12px;min-width:0}.live-panel h3{font-size:1rem}.live-panel canvas{margin:4px 0}.legend{display:flex;gap:8px 18px;flex-wrap:wrap;font-weight:650}.legend span{border-bottom:3px solid}.legend .dash{border-bottom-style:dashed}.legend .dot{border-bottom-style:dotted}@media(max-width:620px){.live-grid{grid-template-columns:1fr}}
+</style>
+<main>
+<header>
+<div class="eyebrow">Mathematik · 7. Klasse AHS</div>
+<h1>Die Autofahrt</h1>
+<p>Ein Auto fährt an, wird schneller und kommt nach zehn Sekunden wieder zum Stehen. Untersuche, wie Weg, Geschwindigkeit und Beschleunigung zusammenhängen.</p>
+</header>
+<nav aria-label="Abschnitte"><a href="#fahrt">Fahrt ansehen</a><a href="#labor">Änderungsraten erkunden</a><a href="#zusammenhang">Graphen vergleichen</a><a href="#aufgaben">Aufgaben lösen</a></nav>
+<section id="fahrt">
+<h2>Schau dem Auto beim Fahren zu</h2>
+<p class="formula">s(t) = 3t² − 0,2t³ &nbsp; (0 ≤ t ≤ 10)</p>
+<p><b>t</b> ist die Zeit seit dem Start in Sekunden. <b>s(t)</b> ist die seit dem Start zurückgelegte Strecke in Metern. Das Auto fährt auf einer geraden Straße vorwärts.</p>
+<div class="row"><button class="primary" id="play">Fahrt starten</button><button id="pause" disabled>Pause</button><button id="reset">Zurücksetzen</button><label for="pace">Wiedergabe</label><select id="pace"><option value="1">Originaltempo</option><option value="0.5">Zeitlupe</option><option value="2">Doppelt so schnell</option></select></div>
+<canvas id="road" role="img" aria-label="Animiertes Auto auf einer geraden Straße mit Entfernungsmarkierungen von 0 bis 100 Metern"></canvas>
+<div class="range"><label for="time">Zeitpunkt einstellen</label><input id="time" type="range" min="0" max="10" step="0.01" value="0"></div>
+<div class="readouts" id="readouts"></div>
+<label class="row"><input type="checkbox" id="showValues"> Messwerte für Weg, Geschwindigkeit und Beschleunigung einblenden</label>
+<h2>So entstehen Tachoanzeige und Graphen</h2>
+<p>Der Tacho zeigt die momentane Geschwindigkeit. In jedem Diagramm zeichnet der Punkt bis zur aktuellen Zeit den jeweiligen Graphen. Setze die Fahrt zurück und achte darauf, welche Kurve beim Bremsen weiter steigt.</p>
+<div class="live-grid">
+<div class="live-panel"><h3>Tacho</h3><canvas id="speedometer" role="img" aria-label="Tacho mit Zeiger und digitaler Anzeige der momentanen Geschwindigkeit"></canvas></div>
+<div class="live-panel"><h3>Zeit–Weg-Gesetz</h3><canvas id="live-s" role="img" aria-label="Während der Fahrt entstehender Weg-Zeit-Graph"></canvas></div>
+<div class="live-panel"><h3>Geschwindigkeit</h3><canvas id="live-v" role="img" aria-label="Während der Fahrt entstehender Geschwindigkeit-Zeit-Graph"></canvas></div>
+<div class="live-panel"><h3>Beschleunigung</h3><canvas id="live-a" role="img" aria-label="Während der Fahrt entstehender Beschleunigung-Zeit-Graph"></canvas></div>
+</div>
+</section>
+<section id="labor">
+<h2>Von der mittleren zur momentanen Änderung</h2>
+<p>Wähle ein Diagramm und verschiebe die Zeitpunkte A und B. Der dunkle Punkt folgt dem Auto. Die <span class="blue"><b>Sekante</b></span> verbindet A und B. Die <span class="orange"><b>Tangente</b></span> zeigt die Steigung in A.</p>
+<div class="row"><label for="graph">Diagramm</label><select id="graph"><option value="s">Weg s(t)</option><option value="v">Geschwindigkeit v(t)</option><option value="a">Beschleunigung a(t)</option></select><label class="row" id="linesLabel"><input type="checkbox" id="showLines" checked> Sekante und Tangente einblenden</label></div>
+<p class="note" id="meaning"></p>
+<canvas id="diagram" role="img" aria-label="Zeitdiagramm für Weg, Geschwindigkeit oder Beschleunigung mit markierten Zeitpunkten"></canvas>
+<div class="range"><label for="first">Zeitpunkt A</label><input type="range" id="first" min="0" max="9.9" step="0.1" value="2"></div>
+<div class="range"><label for="second">Zeitpunkt B</label><input type="range" id="second" min="0.1" max="10" step="0.1" value="8"></div>
+<p class="plot-label" id="points"></p>
+<p class="plot-label" id="slopes"></p>
+<div class="row"><button id="jump">Fahrt bei A ansehen</button><button id="near">B auf A + 0,1 s setzen</button></div>
+<details><summary>Formeln für die Änderungsraten</summary>
+<p>Mittlere Geschwindigkeit im Intervall [t₁; t₂] = (s(t₂) − s(t₁)) ÷ (t₂ − t₁). Momentane Geschwindigkeit = v(t) = s′(t).</p>
+<p>Mittlere Beschleunigung im Intervall [t₁; t₂] = (v(t₂) − v(t₁)) ÷ (t₂ − t₁). Momentane Beschleunigung = a(t) = v′(t) = s″(t).</p>
+<p>Die mittlere Änderung pro Sekunde hat jeweils eine zusätzliche Zeiteinheit im Nenner. Aus m wird m/s. Aus m/s wird m/s².</p></details>
+</section>
+<section id="zusammenhang">
+<h2>Was verraten die drei Graphen gemeinsam?</h2>
+<p>Alle Kurven haben dieselbe Zeitachse. Die senkrechte Achse zeigt Zahlenwerte. Lies die Einheit an der jeweiligen Kurve ab und vergleiche Steigungen, Vorzeichen und Zeitpunkte.</p>
+<div class="legend" aria-label="Legende"><span style="color:#116442">Weg s(t) · m</span><span class="dash blue">Geschwindigkeit v(t) · m/s</span><span class="dot orange">Beschleunigung a(t) · m/s²</span></div>
+<label class="row"><input type="checkbox" id="zoom"> Auf den Bereich −8 bis 20 zoomen</label>
+<canvas id="comparison" role="img" aria-label="Weg, Geschwindigkeit und Beschleunigung gemeinsam über der Zeit"></canvas>
+<div class="range"><label for="compareTime">Zeitmarke verschieben</label><input type="range" id="compareTime" min="0" max="10" step="0.1" value="5"></div>
+<p id="comparisonValues" class="plot-label"></p>
+<div id="relationships" class="grid"></div>
+</section>
+<section id="aufgaben">
+<h2>Rechne selbst und erkläre dein Ergebnis</h2>
+<p>Berechne jede Antwort auf Papier. Gib den Zahlenwert ein, wähle die Einheit und entscheide, welche Aussage im Zusammenhang stimmt. Du kannst einen Dezimalpunkt oder ein Dezimalkomma verwenden.</p>
+<div class="grid" id="exercises"></div>
+</section>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const s = t => t*t*(3-.2*t);
+const v = t => t*(6-.6*t);
+const a = t => 6-1.2*t;
+const fmt = (n,d=1) => (Math.abs(n)<.5*10**(-d) ? 0 : n).toFixed(d).replace('.',',');
+const graphs = {
+  s:{fn:s, derivative:v, name:'Weg s', unit:'m', rate:'m/s', min:0, max:100, step:20, meaning:'Die Sekantensteigung im Weg-Zeit-Diagramm ergibt die mittlere Geschwindigkeit. Die Tangentensteigung ergibt die momentane Geschwindigkeit.'},
+  v:{fn:v, derivative:a, name:'Geschwindigkeit v', unit:'m/s', rate:'m/s²', min:0, max:18, step:3, meaning:'Die Sekantensteigung im Geschwindigkeit-Zeit-Diagramm ergibt die mittlere Beschleunigung. Die Tangentensteigung ergibt die momentane Beschleunigung.'},
+  a:{fn:a, name:'Beschleunigung a', unit:'m/s²', min:-6, max:6, step:2, meaning:'Bei positiver Beschleunigung wird das vorwärts fahrende Auto schneller. Bei negativer Beschleunigung wird es langsamer. Bei t = 5 s ist die Beschleunigung null und die Geschwindigkeit am größten.'}
+};
+const exercises = [
+  {title:'Weg nach vier Sekunden', question:'Berechne s(4) und interpretiere den Funktionswert.', value:35.2, unit:'m', answers:['Das Auto fährt in der vierten Sekunde 35,2 m.','Das Auto hat in den ersten vier Sekunden 35,2 m zurückgelegt.','Das Auto fährt nach vier Sekunden 35,2 m pro Sekunde.'], correct:1, hints:['Setze t = 4 in die Wegfunktion ein.','Berechne zuerst 4² und 4³ und setze beide Potenzen in 3t² − 0,2t³ ein.'], solution:'s(4) = 3 · 16 − 0,2 · 64 = 35,2 m. Der Wert gibt die gesamte Strecke vom Start bis t = 4 s an.'},
+  {title:'Momentane Geschwindigkeit', question:'Berechne v(4) aus der Wegfunktion und interpretiere den Wert.', value:14.4, unit:'m/s', answers:['In den ersten vier Sekunden legt das Auto 14,4 m zurück.','Die Geschwindigkeit nimmt bei t = 4 s um 14,4 m/s pro Sekunde zu.','Bei t = 4 s beträgt die Geschwindigkeit genau in diesem Moment 14,4 m/s.'], correct:2, hints:['Leite die Wegfunktion nach t ab.','Für die Geschwindigkeit gilt v(t) = s′(t) = 6t − 0,6t². Setze t = 4 ein.'], solution:'v(4) = 6 · 4 − 0,6 · 16 = 14,4 m/s. Das ist die Steigung der Tangente im Weg-Zeit-Diagramm bei t = 4 s.'},
+  {title:'Mittlere Geschwindigkeit', question:'Bestimme die mittlere Geschwindigkeit von t = 2 s bis t = 8 s.', value:13.2, unit:'m/s', answers:['Bei konstant 13,2 m/s würde das Auto in denselben sechs Sekunden dieselbe Strecke zurücklegen.','Bei t = 8 s beträgt die momentane Geschwindigkeit 13,2 m/s.','Von t = 2 s bis t = 8 s legt das Auto insgesamt 13,2 m zurück.'], correct:0, hints:['Welche Strecke legt das Auto zwischen den beiden Zeitpunkten zurück?','Bilde den Differenzenquotienten (s(8) − s(2)) ÷ (8 − 2).'], solution:'s(8) = 89,6 m und s(2) = 10,4 m. Die Wegänderung ist 79,2 m. Geteilt durch 6 s ergibt das 13,2 m/s.'},
+  {title:'Momentane Beschleunigung beim Bremsen', question:'Berechne a(8) mit Vorzeichen und interpretiere den Wert.', value:-3.6, unit:'m/s²', answers:['Das Auto fährt mit 3,6 m/s rückwärts.','Bei t = 8 s nimmt die Geschwindigkeit momentan mit einer Rate von 3,6 m/s pro Sekunde ab.','Das Auto hat von t = 0 s bis t = 8 s insgesamt 3,6 m/s an Geschwindigkeit verloren.'],correct:1, hints:['Leite die Geschwindigkeitsfunktion nach t ab.','Für die Beschleunigung gilt a(t) = v′(t) = 6 − 1,2t. Achte beim Einsetzen auf das Vorzeichen.'], solution:'a(8) = 6 − 1,2 · 8 = −3,6 m/s². Da v(8) = 9,6 m/s positiv ist, fährt das Auto vorwärts und wird langsamer.'},
+  {title:'Mittlere Beschleunigung', question:'Bestimme die mittlere Beschleunigung von t = 2 s bis t = 5 s.', value:1.8, unit:'m/s²', answers:['Die Geschwindigkeit steigt über das gesamte Intervall um 1,8 m/s.','Am Ende des Intervalls fährt das Auto mit 1,8 m/s.','Die Geschwindigkeit nimmt in diesem Intervall im Mittel um 1,8 m/s pro Sekunde zu.'],correct:2, hints:['Berechne die Geschwindigkeit zu beiden Zeitpunkten.','Bilde den Differenzenquotienten (v(5) − v(2)) ÷ (5 − 2).'], solution:'v(5) = 15 m/s und v(2) = 9,6 m/s. Die Geschwindigkeit nimmt um 5,4 m/s in 3 s zu. Die mittlere Beschleunigung beträgt 1,8 m/s².'},
+  {title:'Gleich schnell am Anfang und Ende', question:'Bestimme die mittlere Beschleunigung von t = 2 s bis t = 8 s. Was ist zwischendurch passiert?', value:0, unit:'m/s²', answers:['Das Auto wird zuerst schneller und dann langsamer. Bei t = 2 s und t = 8 s ist es gleich schnell.','Das Auto fährt das ganze Intervall mit unveränderter Geschwindigkeit.','Das Auto steht zwischen t = 2 s und t = 8 s still.'],correct:0, hints:['Vergleiche v(2) und v(8). Schau anschließend auf den Graphen dazwischen.','Der Zähler im Differenzenquotienten ist v(8) − v(2).'], solution:'v(2) = v(8) = 9,6 m/s. Die mittlere Beschleunigung ist 0 m/s². Dazwischen steigt die Geschwindigkeit auf 15 m/s und fällt wieder auf 9,6 m/s.'}
+];
+
+function options(values, prompt) {
+  return '<option value="">'+prompt+'</option>'+values.map((value,index)=>'<option value="'+index+'">'+value+'</option>').join('');
+}
+function buildExercises() {
+  const units=['m','s','m/s','m/s²'];
+  for(const task of exercises) {
+    const article=document.createElement('article');
+    article.innerHTML='<h3>'+task.title+'</h3><p>'+task.question+'</p><form><div class="fields"><label>Zahlenwert<input name="number" inputmode="decimal"></label><label>Einheit<select name="unit">'+options(units,'Auswählen')+'</select></label></div><label class="interpretation">Deutung<select name="meaning">'+options(task.answers,'Aussage auswählen')+'</select></label><p><button>Antwort prüfen</button></p><output class="feedback" aria-live="polite"></output></form>';
+    const form=article.querySelector('form');
+    form.onsubmit=event=>{
+      event.preventDefault();
+      const {number,unit,meaning}=form.elements;
+      const raw=number.value.trim().replace('−','-').replace(',','.');
+      const numberValid=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw);
+      const results=[numberValid && Math.abs(Number(raw)-task.value)<.005, unit.value===String(units.indexOf(task.unit)), meaning.value===String(task.correct)];
+      const success=results.every(Boolean);
+      const feedback=form.querySelector('output');
+      feedback.className='feedback '+(success?'ok':'retry');
+      feedback.textContent=success?'Alles richtig!':results.map((ok,i)=>['Zahlenwert','Einheit','Deutung'][i]+(ok?' richtig':' prüfen')).join(' · ');
+    };
+    for(const [index,content] of [...task.hints,task.solution].entries()) {
+      const details=document.createElement('details');
+      details.innerHTML='<summary>'+['Tipp 1','Tipp 2','Lösungsweg'][index]+' anzeigen</summary><p>'+content+'</p>';
+      article.append(details);
+    }
+    $('exercises').append(article);
+  }
+}
+
+function surface(id,height) {
+  const canvas=$(id), width=canvas.clientWidth, ratio=window.devicePixelRatio||1;
+  canvas.style.height=height+'px';
+  const w=Math.round(width*ratio), h=Math.round(height*ratio);
+  if(canvas.width!==w || canvas.height!==h){canvas.width=w;canvas.height=h;}
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.clearRect(0,0,width,height);
+  return {ctx,width,height};
+}
+function line(ctx,x,y,u,w,color,weight=1,dash=[]) {
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=weight;ctx.setLineDash(dash);
+  ctx.moveTo(x,y);ctx.lineTo(u,w);ctx.stroke();ctx.setLineDash([]);
+}
+function label(ctx,content,x,y,color='#254339',align='center') {
+  ctx.font='12px system-ui';ctx.textAlign=align;ctx.fillStyle=color;ctx.fillText(content,x,y);
+}
+function disk(ctx,x,y,r,color) {
+  ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.fillStyle=color;ctx.fill();
+}
+let t=0, playing=false, previous=null, frame=0;
+function drawRoad() {
+  const {ctx,width}=surface('road',175);
+  const x=meters=>40+meters/100*(width-80);
+  ctx.fillStyle='#e5f2f8';ctx.fillRect(0,0,width,53);
+  ctx.fillStyle='#bcdcae';ctx.fillRect(0,53,width,122);
+  ctx.fillStyle='#35433e';ctx.fillRect(0,72,width,66);
+  line(ctx,0,78,width,78,'#dbe7dc',1);
+  line(ctx,0,133,width,133,'#dbe7dc',1);
+  line(ctx,0,105,width,105,'#f5e4ad',1,[15,12]);
+  for(let m=0;m<=100;m+=20) {
+    line(ctx,x(m),136,x(m),148,'#254339');
+    label(ctx,m+' m',x(m),163);
+  }
+  ctx.save();ctx.translate(x(s(t)),112);
+  ctx.fillStyle='#ce542c';ctx.beginPath();ctx.roundRect(-29,-11,58,15,5);ctx.fill();
+  ctx.beginPath();ctx.moveTo(-21,-10);ctx.lineTo(-12,-24);ctx.quadraticCurveTo(-9,-27,-4,-27);ctx.lineTo(11,-27);ctx.quadraticCurveTo(15,-27,18,-23);ctx.lineTo(24,-10);ctx.fill();
+  ctx.fillStyle='#d9eff6';ctx.beginPath();ctx.moveTo(-15,-12);ctx.lineTo(-8,-23);ctx.lineTo(1,-23);ctx.lineTo(1,-12);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(4,-12);ctx.lineTo(4,-23);ctx.lineTo(12,-23);ctx.lineTo(18,-12);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#ffe9ae';ctx.fillRect(24,-8,5,4);
+  for(const wheel of [-18,18]){disk(ctx,wheel,3,7,'#152727');disk(ctx,wheel,3,3,'#a9bcba');}
+  ctx.restore();
+  $('time').value=t;
+  $('time').setAttribute('aria-valuetext',fmt(t,2)+' Sekunden');
+  const show=$('showValues').checked;
+  const values=[fmt(t,2)+' s',show?fmt(s(t),2)+' m':'–',show?fmt(v(t),2)+' m/s':'–',show?fmt(a(t),2)+' m/s²':'–'];
+  for(const [i,el] of [...$('readouts').querySelectorAll('strong')].entries()) el.textContent=values[i];
+}
+function drawGraph() {
+  const g=graphs[$('graph').value];
+  const {ctx,width,height}=surface('diagram',263);
+  const L=42, R=width-19, T=25, B=height-37;
+  const X=u=>L+u/10*(R-L), Y=z=>B-(z-g.min)/(g.max-g.min)*(B-T);
+  const first=Number($('first').value);
+  const minSecond=Number((first+.1).toFixed(1));
+  $('second').min=minSecond;
+  if(Number($('second').value)<minSecond) $('second').value=minSecond;
+  const second=Number($('second').value);
+  const hasRates=Boolean(g.derivative);
+  $('linesLabel').hidden=!hasRates;
+  $('linesLabel').style.display=hasRates?'':'none';
+  $('meaning').textContent=g.meaning;
+  const show=hasRates && $('showLines').checked;
+  $('slopes').hidden=!show;
+  $('points').textContent='A · '+fmt(first)+' s | B · '+fmt(second)+' s';
+  ctx.fillStyle='#eff7f3';ctx.fillRect(0,0,width,height);
+  for(let y=g.min;y<=g.max;y+=g.step){
+    line(ctx,L,Y(y),R,Y(y),y===0?'#617e6e':'#c8dcd3');
+    label(ctx,String(y),L-7,Y(y)+4,'#254339','right');
+  }
+  for(let u=0;u<=10;u+=2){
+    line(ctx,X(u),T,X(u),B,u===0?'#617e6e':'#c8dcd3');
+    label(ctx,String(u),X(u),B+16);
+  }
+  label(ctx,g.name+' ('+g.unit+')',L,16,'#254339','left');
+  label(ctx,'Zeit t (s)',R,height-4,'#254339','right');
+  ctx.save();ctx.beginPath();ctx.rect(L,T,R-L,B-T);ctx.clip();
+  ctx.beginPath();ctx.lineWidth=3;ctx.strokeStyle='#116442';
+  ctx.moveTo(X(0),Y(g.fn(0)));
+  for(let i=1;i<=120;i++){const u=i/12;ctx.lineTo(X(u),Y(g.fn(u)));}
+  ctx.stroke();
+  const start=g.fn(first), end=g.fn(second);
+  if(show){
+    const avg=(end-start)/(second-first), local=g.derivative(first);
+    line(ctx,X(0),Y(start-first*avg),X(10),Y(start+(10-first)*avg),'#245aa8',2,[7,4]);
+    line(ctx,X(first-1.1),Y(start-1.1*local),X(first+1.1),Y(start+1.1*local),'#9d4900',2);
+    $('slopes').textContent='Mittlere Änderung: '+fmt(avg,2)+' '+g.rate+' · Momentane Änderung bei A: '+fmt(local,2)+' '+g.rate;
+  }
+  line(ctx,X(t),T,X(t),B,'#44574e',1,[3,4]);
+  ctx.restore();
+  disk(ctx,X(second),Y(end),4,'#245aa8');
+  disk(ctx,X(first),Y(start),4,'#9d4900');
+  disk(ctx,X(t),Y(g.fn(t)),3,'#1b2b25');
+  const together=Math.abs(X(second)-X(first))<19;
+  label(ctx,'A',X(first)-(together?7:0),Y(start)+(Y(start)<T+15?17:-8),'#853900');
+  label(ctx,'B',X(second)+(together?7:0),Y(end)+(Y(end)<T+15?17:-8),'#245aa8');
+}
+const curveStyle={
+  s:{color:'#116442',dash:[]},
+  v:{color:'#245aa8',dash:[8,4]},
+  a:{color:'#9d4900',dash:[2,4]}
+};
+
+function plotCurves(id, keys, limits, end, marker, title) {
+  const {ctx,width,height}=surface(id,keys.length===1?176:300);
+  const [min,max,step]=limits;
+  const left=39,right=width-17,top=22,bottom=height-33;
+  const x=time=>left+time/10*(right-left);
+  const y=value=>bottom-(value-min)/(max-min)*(bottom-top);
+  ctx.fillStyle='#eff7f3';ctx.fillRect(0,0,width,height);
+  for(let tick=min;tick<=max;tick+=step) {
+    line(ctx,left,y(tick),right,y(tick),tick===0?'#617e6e':'#c8dcd3');
+    label(ctx,String(tick),left-6,y(tick)+4,'#254339','right');
+  }
+  for(let tick=0;tick<=10;tick+=2) {
+    line(ctx,x(tick),top,x(tick),bottom,'#c8dcd3');
+    label(ctx,String(tick),x(tick),bottom+15);
+  }
+  label(ctx,title,left,14,'#254339','left');
+  label(ctx,'Zeit t (s)',right,height-4,'#254339','right');
+  ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();
+  line(ctx,x(marker),top,x(marker),bottom,'#5b6d61',1,[3,4]);
+  for(const key of keys) {
+    const {fn}=graphs[key];
+    const {color,dash}=curveStyle[key];
+    const count=Math.max(1,Math.ceil(end*12));
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.8;ctx.setLineDash(dash);
+    ctx.moveTo(x(0),y(fn(0)));
+    for(let i=1;i<=count;i++){
+      const time=i*end/count;
+      ctx.lineTo(x(time),y(fn(time)));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  ctx.restore();
+  for(const key of keys) {
+    const value=graphs[key].fn(marker);
+    if(value>=min && value<=max)disk(ctx,x(marker),y(value),4,curveStyle[key].color);
+  }
+}
+
+function drawSpeedometer() {
+  const {ctx,width}=surface('speedometer',176);
+  const center=width/2, base=116, radius=Math.min(79,width/2-20);
+  const angle=speed=>Math.PI+Math.PI*speed/60;
+  const point=(r,speed)=>[center+r*Math.cos(angle(speed)),base+r*Math.sin(angle(speed))];
+  ctx.beginPath();ctx.arc(center,base,radius,Math.PI,2*Math.PI);
+  ctx.lineWidth=7;ctx.strokeStyle='#b8cfbf';ctx.stroke();
+  for(let speed=0;speed<=60;speed+=10) {
+    line(ctx,...point(radius-7,speed),...point(radius+4,speed),'#315444',1.5);
+    const [x,y]=point(radius+14,speed);
+    label(ctx,String(speed),x,y+4);
+  }
+  const kmh=v(t)*3.6;
+  line(ctx,center,base,...point(radius-12,kmh),'#9d4900',3);
+  disk(ctx,center,base,5,'#9d4900');
+  label(ctx,fmt(kmh)+' km/h  ·  '+fmt(v(t))+' m/s',center,151);
+  $('speedometer').setAttribute('aria-label','Momentane Geschwindigkeit '+fmt(kmh)+' Kilometer pro Stunde');
+}
+
+function drawLive() {
+  drawSpeedometer();
+  for(const key of ['s','v','a']) {
+    const g=graphs[key];
+    plotCurves('live-'+key,[key],[g.min,g.max,g.step],t,t,g.name+' ('+g.unit+')');
+  }
+}
+
+function drawComparison() {
+  const marker=Number($('compareTime').value);
+  const zoom=$('zoom').checked;
+  plotCurves('comparison',['s','v','a'],zoom?[-8,20,4]:[-10,100,10],10,marker,'Zahlenwert');
+  $('comparisonValues').textContent='t = '+fmt(marker)+' s · s(t) = '+fmt(s(marker),2)+' m · v(t) = '+fmt(v(marker),2)+' m/s · a(t) = '+fmt(a(marker),2)+' m/s²'+(zoom?' · Wegkurve oberhalb von 20 m abgeschnitten':'');
+}
+
+const relationships=[
+  ['v fällt nach 5 s. Was passiert mit dem Auto?',['Es wird langsamer und fährt weiter vorwärts, bis es anhält.','Es fährt ab 5 s rückwärts.','Es fährt mit konstanter Geschwindigkeit weiter.'],0,'Zwischen 5 s und 10 s gilt v(t) > 0 und a(t) < 0. Das Auto fährt vorwärts und wird langsamer.'],
+  ['Warum steigt s während des Bremsens weiter?',['Weil die Beschleunigung negativ ist.','Weil die Beschleunigung null ist.','Weil die Geschwindigkeit bis zum Anhalten positiv bleibt.'],2,'Die Steigung von s ist v. Beim Bremsen sinkt v und bleibt bis zum Anhalten positiv. Daher steigt s weiter, aber immer flacher.'],
+  ['Was bedeutet a(5) = 0 in dieser Fahrt?',['Das Auto steht.','Die Geschwindigkeit erreicht ihr Maximum.','Der zurückgelegte Weg erreicht sein Maximum.'],1,'Vor 5 s steigt v, danach fällt v. Bei 5 s ist die Tangente an v waagrecht. Das Auto fährt dort mit 15 m/s.'],
+  ['Wann ist der Weggraph am steilsten?',['Beim Start.','Beim Anhalten.','Bei t = 5 s.'],2,'Der Weggraph ist dort am steilsten, wo seine Ableitung v am größten ist. Das ist bei 5 s der Fall.']
+];
+
+function buildRelationships() {
+  for(const [question,answers,correct,explanation] of relationships) {
+    const article=document.createElement('article');
+    const form=document.createElement('form');
+    form.innerHTML='<label class="interpretation">'+question+'<select required>'+options(answers,'Aussage auswählen')+'</select></label><p><button>Antwort prüfen</button></p><output class="feedback" aria-live="polite"></output>';
+    const feedback=form.querySelector('output');
+    form.onsubmit=event=>{
+      event.preventDefault();
+      const right=form.querySelector('select').value===String(correct);
+      feedback.className='feedback '+(right?'ok':'retry');
+      feedback.textContent=right?explanation:'Schau auf die Vorzeichen und Steigungen im gemeinsamen Diagramm.';
+    };
+    const solution=document.createElement('details');
+    solution.innerHTML='<summary>Begründung anzeigen</summary><p>'+explanation+'</p>';
+    article.append(form,solution);
+    $('relationships').append(article);
+  }
+}
+
+function draw(){drawRoad();drawGraph();drawLive();}
+function redrawAll(){draw();drawComparison();}
+function setPlaying(on) {
+  playing=on;
+  $('play').disabled=on;
+  $('pause').disabled=!on;
+  $('play').textContent=t>=10?'Fahrt wiederholen':t>0&&!on?'Weiterfahren':'Fahrt starten';
+  if(!on) cancelAnimationFrame(frame);
+}
+function animate(now) {
+  if(!playing)return;
+  if(previous!==null)t=Math.min(10,t+Math.min(60,now-previous)/1000*Number($('pace').value));
+  previous=now;
+  draw();
+  if(t<10)frame=requestAnimationFrame(animate);
+  else setPlaying(false);
+}
+function seek(value) {t=value;setPlaying(false);draw();}
+$('play').onclick=()=>{if(t>=10)t=0;previous=null;setPlaying(true);frame=requestAnimationFrame(animate);};
+$('pause').onclick=()=>setPlaying(false);
+$('reset').onclick=()=>seek(0);
+$('time').oninput=()=>seek(Number($('time').value));
+$('jump').onclick=()=>seek(Number($('first').value));
+$('near').onclick=()=>{$('second').value=(Number($('first').value)+.1).toFixed(1);drawGraph();};
+$('showValues').oninput=drawRoad;
+for(const id of ['first','second','graph','showLines']) $(id).oninput=drawGraph;
+$('readouts').innerHTML=['Zeit t','Weg s(t)','Geschwindigkeit v(t)','Beschleunigung a(t)'].map(name=>'<div><span>'+name+'</span><strong></strong></div>').join('');
+buildExercises();
+buildRelationships();
+$('zoom').oninput=drawComparison;
+$('compareTime').oninput=drawComparison;
+window.addEventListener('resize',redrawAll);
+redrawAll();
+</script>
+</html>
